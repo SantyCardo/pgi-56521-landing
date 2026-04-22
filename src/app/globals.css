@@ -30,6 +30,13 @@ body:where(.dark *) {
   color: #c8d8e4;
 }
 
+/* HTML content floats above 3D canvas */
+main > section,
+main > div {
+  position: relative;
+  z-index: 1;
+}
+
 /* Grain texture overlay */
 body::after {
   content: "";

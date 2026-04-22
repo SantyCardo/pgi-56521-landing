@@ -2,45 +2,27 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import InlineIcon3DLoader from "./InlineIcon3DLoader";
+import type { IconType } from "@/components/three/InlineIcon3D";
 
-const STEPS = [
+const STEPS: Array<{ num: string; title: string; desc: string; icon3d: IconType }> = [
   {
     num: "1",
     title: "Coloca tu Google Cardboard",
     desc: "Solo necesitas un smartphone y un visor de bajo costo. Sin internet, sin configuración compleja.",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
-        <rect x="6" y="14" width="36" height="20" rx="6" stroke="currentColor" strokeWidth="2.5" />
-        <circle cx="18" cy="24" r="5" stroke="currentColor" strokeWidth="2" />
-        <circle cx="30" cy="24" r="5" stroke="currentColor" strokeWidth="2" />
-        <path d="M4 24 Q2 20 6 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M44 24 Q46 20 42 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    ),
+    icon3d: "headset",
   },
   {
     num: "2",
     title: "Aprende con 5 lecciones",
     desc: "Cada lección cubre un aspecto critico: via de administración, rotación, agujas, almacenamiento y tips.",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
-        <rect x="8" y="6" width="32" height="36" rx="4" stroke="currentColor" strokeWidth="2.5" />
-        <path d="M16 16h16M16 22h12M16 28h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="36" cy="36" r="8" fill="currentColor" opacity="0.15" />
-        <path d="M33 36l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    icon3d: "book",
   },
   {
     num: "3",
     title: "Practica sin riesgo clinico",
     desc: "Practica la técnica completa en un entorno seguro, tantas veces como necesites, antes de la primera inyección real.",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
-        <path d="M24 4 L28 16 L40 16 L30 24 L34 36 L24 28 L14 36 L18 24 L8 16 L20 16 Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
-        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="2" opacity="0.2" strokeDasharray="4 4" />
-      </svg>
-    ),
+    icon3d: "star",
   },
 ];
 
@@ -116,7 +98,7 @@ export default function HowItWorks() {
 
               {/* Icon */}
               <div className="text-primary-light mb-4 flex justify-center">
-                {step.icon}
+                <InlineIcon3DLoader type={step.icon3d} />
               </div>
 
               <h3 className="font-[family-name:var(--font-playfair)] text-xl font-bold text-primary dark:text-primary-lighter mb-3">

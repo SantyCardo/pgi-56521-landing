@@ -2,6 +2,8 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import InlineIcon3DLoader from "./InlineIcon3DLoader";
+import type { IconType } from "@/components/three/InlineIcon3D";
 
 const lecciones = [
   { num: 1, title: "Via de administración", desc: "Subcutánea correcta vs. IV/IM accidental", color: "bg-red-500" },
@@ -11,31 +13,7 @@ const lecciones = [
   { num: 5, title: "Tips del pen", desc: "Dosis, espera 10s, basal vs. rápida", color: "bg-sky-500" },
 ];
 
-const techIcons = [
-  // Unity - cube/game
-  <svg key="unity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-7 h-7">
-    <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" />
-    <path d="M12 22V12M2 7l10 5 10-5" />
-  </svg>,
-  // Google Cardboard - glasses
-  <svg key="cardboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-7 h-7">
-    <rect x="2" y="7" width="20" height="10" rx="3" />
-    <circle cx="8" cy="12" r="2.5" />
-    <circle cx="16" cy="12" r="2.5" />
-    <path d="M10.5 12h3" />
-  </svg>,
-  // Gaze - eye
-  <svg key="gaze" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-7 h-7">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>,
-  // APK Offline - phone+download
-  <svg key="apk" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-7 h-7">
-    <rect x="5" y="2" width="14" height="20" rx="2" />
-    <path d="M12 8v6M9 12l3 3 3-3" />
-    <circle cx="12" cy="19" r="0.5" fill="currentColor" />
-  </svg>,
-];
+const techIcons3D: IconType[] = ["cube", "headset", "eye", "phone"];
 
 const techStack = [
   { name: "Unity", desc: "Motor de desarrollo del prototipo VR con exportación APK Android" },
@@ -146,7 +124,7 @@ export default function TecnologiaSection() {
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
               >
                 <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary-lighter/30 dark:bg-primary/30 flex items-center justify-center text-primary dark:text-primary-lighter group-hover:bg-gradient-to-br group-hover:from-primary group-hover:to-primary-light group-hover:text-white group-hover:shadow-[0_8px_25px_rgba(26,82,118,0.2)] transition-all duration-300">
-                  {techIcons[i]}
+                  <InlineIcon3DLoader type={techIcons3D[i]} />
                 </div>
                 <h4 className="font-semibold text-primary dark:text-primary-lighter text-sm mb-1">{t.name}</h4>
                 <p className="text-muted dark:text-primary-lighter/60 text-xs leading-relaxed">{t.desc}</p>
