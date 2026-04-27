@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import ScrollProgressBar from "@/components/ScrollProgressBar";
-import MorphingHero from "@/components/MorphingHero";
+import RadialOrbitalTimeline from "@/components/RadialOrbitalTimeline";
 
 const ProyectoSection = dynamic(() => import("@/components/ProyectoSection"));
 const SectionDivider = dynamic(() => import("@/components/SectionDivider"));
@@ -20,7 +20,7 @@ export default function Home() {
       <ScrollProgressBar />
       <Navbar />
       <main id="inicio">
-        <MorphingHero />
+        <RadialOrbitalTimeline />
         <ProyectoSection />
         <SectionDivider />
         <HowItWorks />
