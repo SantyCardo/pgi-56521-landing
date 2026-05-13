@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useInView, useMotionValue, useSpring } from "framer-motion";
+import { animate } from "animejs";
 
 interface AnimatedCounterProps {
   target: string;
@@ -10,37 +10,39 @@ interface AnimatedCounterProps {
 
 export default function AnimatedCounter({ target, className }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const fired = useRef(false);
 
   const match = target.match(/^([<>]?)(\d+(?:\.\d+)?)(.*)$/);
   const prefix = match?.[1] ?? "";
   const numericValue = parseFloat(match?.[2] ?? "0");
   const suffix = match?.[3] ?? "";
-
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, {
-    stiffness: 80,
-    damping: 25,
-    restDelta: 0.5,
-  });
+  const isInteger = Number.isInteger(numericValue);
 
   useEffect(() => {
-    if (isInView) {
-      motionValue.set(numericValue);
-    }
-  }, [isInView, motionValue, numericValue]);
+    const el = ref.current;
+    if (!el) return;
 
-  useEffect(() => {
-    const unsubscribe = springValue.on("change", (latest) => {
-      if (ref.current) {
-        const rounded = Number.isInteger(numericValue)
-          ? Math.round(latest)
-          : latest.toFixed(1);
-        ref.current.textContent = `${prefix}${rounded}${suffix}`;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !fired.current) {
+        fired.current = true;
+        const obj = { val: 0 };
+        animate(obj, {
+          val: numericValue,
+          duration: 1500,
+          ease: "outExpo",
+          onUpdate: () => {
+            if (ref.current) {
+              const display = isInteger ? Math.round(obj.val) : obj.val.toFixed(1);
+              ref.current.textContent = `${prefix}${display}${suffix}`;
+            }
+          },
+        });
       }
-    });
-    return unsubscribe;
-  }, [springValue, prefix, suffix, numericValue]);
+    }, { threshold: 0.5 });
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [numericValue, prefix, suffix, isInteger]);
 
   return (
     <span ref={ref} className={className}>

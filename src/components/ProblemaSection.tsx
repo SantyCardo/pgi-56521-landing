@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef, useCallback } from "react";
+import { createTimeline, animate, stagger } from "animejs";
 
 const problems = [
   {
@@ -59,54 +60,125 @@ const severityStyles: Record<string, string> = {
 };
 
 export default function ProblemaSection() {
+  const ref = useRef<HTMLElement>(null);
+  const fired = useRef(false);
+
+  const runAnimation = useCallback(() => {
+    const tl = createTimeline({ defaults: { ease: "outExpo" } });
+
+    tl.add(".prob-header", {
+      translateY: [50, 0],
+      opacity: [0, 1],
+      duration: 800,
+    }, 0);
+
+    tl.add(".prob-underline", {
+      scaleX: [0, 1],
+      duration: 700,
+    }, 200);
+
+    tl.add(".prob-subtitle", {
+      translateY: [20, 0],
+      opacity: [0, 1],
+      duration: 600,
+    }, 400);
+
+    // Cards fly in from alternating sides
+    tl.add(".prob-card", {
+      translateY: [50, 0],
+      translateX: [-30, 0],
+      opacity: [0, 1],
+      scale: [0.9, 1],
+      duration: 800,
+      delay: stagger(150, { from: "first" }),
+      ease: "outElastic(1, .8)",
+    }, 600);
+
+    // Icons inside cards
+    tl.add(".prob-icon", {
+      scale: [0, 1],
+      rotate: [-20, 0],
+      opacity: [0, 1],
+      duration: 500,
+      delay: stagger(150),
+    }, 900);
+
+    // Severity badges pop
+    tl.add(".prob-badge", {
+      scale: [0, 1],
+      opacity: [0, 1],
+      duration: 400,
+      delay: stagger(150),
+      ease: "outBack",
+    }, 1100);
+
+    // Quote slides up
+    tl.add(".prob-quote", {
+      translateY: [40, 0],
+      opacity: [0, 1],
+      scale: [0.95, 1],
+      duration: 900,
+    }, 1300);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !fired.current) {
+        fired.current = true;
+        runAnimation();
+      }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [runAnimation]);
+
+  // Floating cards
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      animate(".prob-float", {
+        translateY: [-2, 2, -2],
+        duration: 4000,
+        loop: true,
+        ease: "inOutSine",
+        delay: stagger(300),
+      });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <section id="problema" className="py-24 px-4 bg-gradient-to-b from-[#f0f6fb] to-white dark:from-[#0c1528] dark:to-[#080e1a]">
+    <section id="problema" className="py-24 px-4 bg-gradient-to-b from-[#f0f6fb] to-white dark:from-[#0a1018] dark:to-[#060d14] tech-grid" ref={ref}>
       <div className="max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0, 1] }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4">
+        <div className="text-center mb-16">
+          <h2 className="prob-header font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4 opacity-0">
             El Problema
           </h2>
-          <motion.div
-            className="w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent mb-6"
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          />
-          <p className="text-muted dark:text-primary-lighter/60 max-w-2xl mx-auto text-lg">
+          <div className="prob-underline w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent mb-6" style={{ transformOrigin: "center", transform: "scaleX(0)" }} />
+          <p className="prob-subtitle text-muted dark:text-primary-lighter/60 max-w-2xl mx-auto text-lg opacity-0">
             La formación insuficiente en técnica de insulinización genera errores
             clínicos que comprometen la salud del paciente y su calidad de vida.
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {problems.map((p, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: 0.1 * i, ease: [0.25, 0.1, 0, 1] }}
-              whileHover={{ y: -4 }}
-              className="group relative bg-white dark:bg-white/5 rounded-2xl p-6 border border-primary-lighter/40 dark:border-white/10 hover:shadow-[0_20px_60px_rgba(26,82,118,0.1)] hover:border-primary-light/40 transition-all duration-500 overflow-hidden"
+              className="prob-card prob-float group relative bg-white dark:bg-white/5 rounded-2xl p-6 border border-primary-lighter/40 dark:border-white/10 hover:shadow-[0_20px_60px_rgba(26,82,118,0.1)] hover:border-primary-light/40 transition-all duration-500 overflow-hidden opacity-0"
             >
               {/* Animated left border */}
               <div className="absolute left-0 top-4 bottom-4 w-1 rounded-full bg-primary-light scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center" />
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-lighter/40 dark:bg-primary/30 flex items-center justify-center text-primary dark:text-primary-lighter group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <div className="prob-icon flex-shrink-0 w-12 h-12 rounded-xl bg-primary-lighter/40 dark:bg-primary/30 flex items-center justify-center text-primary dark:text-primary-lighter group-hover:bg-primary group-hover:text-white transition-all duration-300 opacity-0">
                   {p.icon}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-semibold text-primary dark:text-primary-lighter text-lg">{p.title}</h3>
-                    <span className={`relative text-xs px-2 py-0.5 rounded-full font-medium ${severityStyles[p.color]}`}>
+                    <span className={`prob-badge relative text-xs px-2 py-0.5 rounded-full font-medium ${severityStyles[p.color]} opacity-0`}>
                       {p.severity}
                       {p.color === "red" && (
                         <span className="absolute inset-0 rounded-full animate-ping bg-red-200 opacity-40" />
@@ -116,18 +188,12 @@ export default function ProblemaSection() {
                   <p className="text-muted dark:text-primary-lighter/60 text-sm leading-relaxed">{p.desc}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Quote with glassmorphism */}
-        <motion.blockquote
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}
-          className="relative mt-14 max-w-3xl mx-auto bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-primary-lighter/30 dark:border-white/10 rounded-2xl p-8 text-center"
-        >
+        <blockquote className="prob-quote relative mt-14 max-w-3xl mx-auto bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-primary-lighter/30 dark:border-white/10 rounded-2xl p-8 text-center opacity-0">
           <span className="absolute top-3 left-6 font-[family-name:var(--font-playfair)] text-6xl text-primary/10 leading-none">&ldquo;</span>
           <p className="text-primary/80 dark:text-primary-lighter/80 italic text-lg leading-relaxed relative z-10">
             &ldquo;Las estrategias convencionales no garantizan comprensión
@@ -137,7 +203,7 @@ export default function ProblemaSection() {
             — PGI 56521, Anteproyecto de Grado
           </cite>
           <span className="absolute bottom-3 right-6 font-[family-name:var(--font-playfair)] text-6xl text-primary/10 leading-none rotate-180">&ldquo;</span>
-        </motion.blockquote>
+        </blockquote>
       </div>
     </section>
   );

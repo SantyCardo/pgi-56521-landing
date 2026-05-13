@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle,
@@ -13,6 +14,10 @@ import {
   ArrowRight,
   X,
 } from "lucide-react";
+const ShaderBackground = dynamic(
+  () => import("@/components/ui/shader-background").then((m) => m.ShaderBackground),
+  { ssr: false }
+);
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -107,54 +112,27 @@ const TIMELINE_DATA: TimelineItem[] = [
   },
 ];
 
-/* ── Starry Night Canvas (dark mode) ── */
-interface Meteor {
-  x: number; y: number;
-  vx: number; vy: number;
-  life: number; maxLife: number;
-  trailLen: number; width: number;
-  delay: number; elapsed: number; active: boolean;
-}
-
-function createMeteor(w: number, h: number): Meteor {
-  const startX = w * (0.45 + Math.random() * 0.55);
-  const startY = h * (Math.random() * 0.35);
-  const angle = (210 + Math.random() * 30) * (Math.PI / 180);
-  const speed = 6 + Math.random() * 6;
-  return {
-    x: startX, y: startY,
-    vx: Math.cos(angle) * speed, vy: -Math.sin(angle) * speed,
-    life: 0, maxLife: 60 + Math.random() * 50,
-    trailLen: 80 + Math.random() * 100, width: 1.2 + Math.random() * 1.2,
-    delay: Math.random() * 400, elapsed: 0, active: false,
-  };
-}
-
+/* ── Starry Canvas (dark mode) — stars only, slow twinkle ── */
 function StarryCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<Array<{
     x: number; y: number; r: number;
     baseAlpha: number; speed: number; offset: number;
-    hue: number; sat: number;
   }>>([]);
-  const meteorsRef = useRef<Meteor[]>([]);
   const frameRef = useRef<number>(0);
 
   const generate = useCallback(() => {
     const c = canvasRef.current;
     if (!c) return;
-    const count = Math.floor((c.width * c.height) / 2500);
+    const count = Math.floor((c.width * c.height) / 3000);
     starsRef.current = Array.from({ length: count }, () => ({
-      x: Math.random() * c.width, y: Math.random() * c.height,
-      r: Math.random() * 1.5 + 0.3,
-      baseAlpha: Math.random() * 0.6 + 0.2,
-      speed: Math.random() * 0.015 + 0.005,
+      x: Math.random() * c.width,
+      y: Math.random() * c.height,
+      r: Math.random() * 1.3 + 0.2,
+      baseAlpha: Math.random() * 0.5 + 0.15,
+      speed: Math.random() * 0.003 + 0.001,
       offset: Math.random() * Math.PI * 2,
-      hue: Math.random() > 0.85 ? (Math.random() > 0.5 ? 210 : 40) : 0,
-      sat: Math.random() > 0.85 ? 30 : 0,
     }));
-    meteorsRef.current = Array.from({ length: 4 }, () => createMeteor(c.width, c.height));
-    meteorsRef.current.forEach((m, i) => { m.delay = i * 180 + Math.random() * 120; });
   }, []);
 
   useEffect(() => {
@@ -177,61 +155,11 @@ function StarryCanvas() {
       ctx.clearRect(0, 0, c.width, c.height);
       for (const s of starsRef.current) {
         const twinkle = Math.sin(t * s.speed + s.offset);
-        const alpha = Math.max(0.05, Math.min(1, s.baseAlpha + twinkle * 0.3));
+        const alpha = Math.max(0.05, Math.min(1, s.baseAlpha + twinkle * 0.15));
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = s.hue
-          ? `hsla(${s.hue},${s.sat}%,90%,${alpha})`
-          : `rgba(255,255,255,${alpha})`;
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fill();
-        if (s.r > 1.1 && alpha > 0.5) {
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * 2.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(180,210,240,${alpha * 0.08})`;
-          ctx.fill();
-        }
-      }
-      for (const m of meteorsRef.current) {
-        m.elapsed++;
-        if (!m.active) { if (m.elapsed > m.delay) m.active = true; else continue; }
-        m.life++; m.x += m.vx; m.y += m.vy;
-        const progress = m.life / m.maxLife;
-        let headAlpha: number;
-        if (progress < 0.08) headAlpha = progress / 0.08;
-        else if (progress < 0.6) headAlpha = 1;
-        else headAlpha = 1 - (progress - 0.6) / 0.4;
-        headAlpha = Math.max(0, Math.min(1, headAlpha));
-        const speed = Math.sqrt(m.vx * m.vx + m.vy * m.vy);
-        const nx = -m.vx / speed; const ny = -m.vy / speed;
-        for (let i = 0; i < 30; i++) {
-          const frac = i / 30;
-          const tx = m.x + nx * m.trailLen * frac;
-          const ty = m.y + ny * m.trailLen * frac;
-          ctx.beginPath();
-          ctx.arc(tx, ty, m.width * (1 - frac * 0.7), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220,240,255,${headAlpha * (1 - frac) * (1 - frac) * 0.6})`;
-          ctx.fill();
-        }
-        for (let i = 0; i < 15; i++) {
-          const frac = i / 15;
-          const tx = m.x + nx * m.trailLen * 0.6 * frac;
-          const ty = m.y + ny * m.trailLen * 0.6 * frac;
-          ctx.beginPath();
-          ctx.arc(tx, ty, m.width * 4 * (1 - frac), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(150,200,255,${headAlpha * (1 - frac) * 0.12})`;
-          ctx.fill();
-        }
-        ctx.beginPath();
-        ctx.arc(m.x, m.y, m.width * 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${headAlpha})`;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(m.x, m.y, m.width * 5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180,220,255,${headAlpha * 0.2})`;
-        ctx.fill();
-        if (m.life >= m.maxLife || m.x < -100 || m.y > c.height + 100) {
-          Object.assign(m, { ...createMeteor(c.width, c.height), delay: 200 + Math.random() * 350, elapsed: 0, active: false });
-        }
       }
       frameRef.current = requestAnimationFrame(draw);
     };
@@ -423,8 +351,12 @@ export default function RadialOrbitalTimeline() {
     >
       {/* Background layers */}
       <StarryCanvas />
-      <div className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-1000 z-0" style={{ background: "radial-gradient(circle, rgba(94,173,213,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
-      <div className="absolute -bottom-12 -left-20 w-[400px] h-[400px] rounded-full pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-1000 z-0" style={{ background: "radial-gradient(circle, rgba(120,100,200,0.06) 0%, transparent 70%)", filter: "blur(80px)" }} />
+      {/* Shader background — dark mode only */}
+      <div className="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-1000 z-[1]">
+        <ShaderBackground opacity={0.3} />
+      </div>
+      <div className="absolute -top-24 -right-24 w-[500px] h-[500px] rounded-full pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-1000 z-[2]" style={{ background: "radial-gradient(circle, rgba(94,173,213,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
+      <div className="absolute -bottom-12 -left-20 w-[400px] h-[400px] rounded-full pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-1000 z-[2]" style={{ background: "radial-gradient(circle, rgba(120,100,200,0.06) 0%, transparent 70%)", filter: "blur(80px)" }} />
       <FloatingClouds />
 
       {/* Gradient mesh */}
@@ -446,14 +378,14 @@ export default function RadialOrbitalTimeline() {
 
       {/* Title */}
       <div className="relative z-10 text-center px-4 pt-20 md:pt-22 pb-2 flex-shrink-0">
-        <h1 className="font-[family-name:var(--font-geist-sans)] text-2xl md:text-3xl lg:text-4xl font-extralight tracking-tight text-primary dark:text-primary-lighter leading-tight">
+        <h1 className="font-[family-name:var(--font-playfair)] text-2xl md:text-3xl lg:text-4xl font-bold text-primary dark:text-primary-lighter leading-tight">
           <motion.span
             className="inline-block overflow-hidden"
             initial={{ clipPath: "inset(0 100% 0 0)" }}
             animate={{ clipPath: "inset(0 0% 0 0)" }}
             transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}
           >
-            <motion.span className="inline-block font-medium" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}>
+            <motion.span className="inline-block" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0, 1] }}>
               Insulinizaci&oacute;n
             </motion.span>
           </motion.span>
@@ -463,7 +395,7 @@ export default function RadialOrbitalTimeline() {
             animate={{ clipPath: "inset(0 0% 0 0)" }}
             transition={{ duration: 1, delay: 0.6, ease: [0.25, 0.1, 0, 1] }}
           >
-            <motion.span className="inline-block text-primary-light font-extralight" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.1, 0, 1] }}>
+            <motion.span className="inline-block text-primary-light" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.6, ease: [0.25, 0.1, 0, 1] }}>
               con Realidad Virtual
             </motion.span>
           </motion.span>
@@ -476,6 +408,21 @@ export default function RadialOrbitalTimeline() {
         >
           Haz clic en los nodos para explorar el proyecto
         </motion.p>
+        <motion.div
+          className="mt-4 space-y-1"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.15, ease: [0.25, 0.1, 0, 1] }}
+        >
+          <p className="text-xs md:text-sm text-muted dark:text-primary-lighter/50">
+            <span className="font-semibold text-primary dark:text-primary-lighter/70">Autores:</span>{" "}
+            Brayan Steven Le&oacute;n Martinez &bull; Santiago Cardona Prada
+          </p>
+          <p className="text-xs md:text-sm text-muted dark:text-primary-lighter/50">
+            <span className="font-semibold text-primary dark:text-primary-lighter/70">Director:</span>{" "}
+            Leonardo Stiven Pardo Ni&ntilde;o
+          </p>
+        </motion.div>
       </div>
 
       {/* Orbital area */}

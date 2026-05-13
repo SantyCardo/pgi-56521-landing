@@ -26,8 +26,8 @@ body {
 
 .dark body,
 body:where(.dark *) {
-  background: #080e1a;
-  color: #c8d8e4;
+  background: #060d14;
+  color: #d4d4d4;
 }
 
 /* Grain texture overlay */
@@ -70,10 +70,36 @@ body::after {
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #0a1020;
+  background: #111111;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #2980b9, #0ea5e9);
   border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #555, #333);
+}
+
+/* Technical grid overlay for sections */
+.tech-grid {
+  background-image:
+    linear-gradient(rgba(41,128,185,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41,128,185,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.dark .tech-grid {
+  background-image:
+    linear-gradient(rgba(41,128,185,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41,128,185,0.06) 1px, transparent 1px);
+}
+
+/* Section code label */
+.section-code {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }

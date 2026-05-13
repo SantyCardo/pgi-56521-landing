@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useEffect, useRef, useCallback } from "react";
+import { createTimeline, animate, stagger } from "animejs";
 
 const STEPS = [
   {
@@ -45,28 +45,97 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const ref = useRef<HTMLElement>(null);
+  const fired = useRef(false);
+
+  const runAnimation = useCallback(() => {
+    const tl = createTimeline({ defaults: { ease: "outExpo" } });
+
+    tl.add(".hiw-title", {
+      translateY: [40, 0],
+      opacity: [0, 1],
+      duration: 800,
+    }, 0);
+
+    tl.add(".hiw-line", {
+      scaleX: [0, 1],
+      duration: 700,
+    }, 200);
+
+    // SVG connecting dashed lines draw in
+    tl.add(".hiw-connector", {
+      strokeDashoffset: [500, 0],
+      opacity: [0, 0.3],
+      duration: 1200,
+      delay: stagger(400),
+      ease: "inOutQuad",
+    }, 600);
+
+    // Step cards cascade from bottom with scale
+    tl.add(".hiw-step", {
+      translateY: [60, 0],
+      opacity: [0, 1],
+      scale: [0.85, 1],
+      duration: 800,
+      delay: stagger(200),
+      ease: "outElastic(1, .8)",
+    }, 400);
+
+    // Numbered circles pop in with rotation
+    tl.add(".hiw-num", {
+      scale: [0, 1],
+      rotate: [-180, 0],
+      opacity: [0, 1],
+      duration: 700,
+      delay: stagger(200),
+      ease: "outBack",
+    }, 700);
+
+    // Icons fade in
+    tl.add(".hiw-icon", {
+      translateY: [20, 0],
+      opacity: [0, 1],
+      duration: 600,
+      delay: stagger(200),
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !fired.current) {
+        fired.current = true;
+        runAnimation();
+      }
+    }, { threshold: 0.12 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [runAnimation]);
+
+  // Floating pulse on numbered circles
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      animate(".hiw-num", {
+        scale: [1, 1.05, 1],
+        duration: 3000,
+        loop: true,
+        ease: "inOutSine",
+        delay: stagger(400),
+      });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-white to-[#f0f6fb] dark:from-[#080e1a] dark:to-[#0c1528]" ref={ref}>
+    <section className="py-24 px-4 bg-gradient-to-b from-white to-[#f0f6fb] dark:from-[#060d14] dark:to-[#0a1018] tech-grid" ref={ref}>
       <div className="max-w-5xl mx-auto">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0, 1] }}
-        >
-          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4">
+        <div className="text-center mb-16">
+          <h2 className="hiw-title font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4 opacity-0">
             Asi Funciona
           </h2>
-          <motion.div
-            className="w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent"
-            initial={{ scaleX: 0 }}
-            animate={inView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          />
-        </motion.div>
+          <div className="hiw-line w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent" style={{ transformOrigin: "center", transform: "scaleX(0)" }} />
+        </div>
 
         <div className="relative grid md:grid-cols-3 gap-8 md:gap-12">
           {/* Connecting lines (desktop only) */}
@@ -75,47 +144,35 @@ export default function HowItWorks() {
             viewBox="0 0 1000 20"
             preserveAspectRatio="none"
           >
-            <motion.path
+            <path
+              className="hiw-connector"
               d="M170 10 L500 10"
               stroke="#2980b9"
               strokeWidth="2"
               strokeDasharray="8 6"
               fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={inView ? { pathLength: 1, opacity: 0.3 } : {}}
-              transition={{ duration: 1.2, delay: 0.8, ease: "easeInOut" }}
+              opacity="0"
             />
-            <motion.path
+            <path
+              className="hiw-connector"
               d="M500 10 L830 10"
               stroke="#0ea5e9"
               strokeWidth="2"
               strokeDasharray="8 6"
               fill="none"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={inView ? { pathLength: 1, opacity: 0.3 } : {}}
-              transition={{ duration: 1.2, delay: 1.2, ease: "easeInOut" }}
+              opacity="0"
             />
           </svg>
 
           {STEPS.map((step, i) => (
-            <motion.div
-              key={i}
-              className="text-center relative"
-              initial={{ opacity: 0, y: 40 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: 0.3 + i * 0.2, ease: [0.25, 0.1, 0, 1] }}
-            >
+            <div key={i} className="hiw-step text-center relative opacity-0">
               {/* Numbered circle */}
-              <motion.div
-                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-gradient-to-br from-primary to-primary-light text-white text-2xl font-bold shadow-[0_8px_30px_rgba(26,82,118,0.2)]"
-                whileHover={{ scale: 1.1, boxShadow: "0 12px 40px rgba(14,165,233,0.3)" }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
+              <div className="hiw-num w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center bg-gradient-to-br from-primary to-primary-light text-white text-2xl font-bold shadow-[0_8px_30px_rgba(26,82,118,0.2)] opacity-0">
                 {step.num}
-              </motion.div>
+              </div>
 
               {/* Icon */}
-              <div className="text-primary-light mb-4 flex justify-center">
+              <div className="hiw-icon text-primary-light mb-4 flex justify-center opacity-0">
                 {step.icon}
               </div>
 
@@ -125,7 +182,7 @@ export default function HowItWorks() {
               <p className="text-muted dark:text-primary-lighter/60 text-sm leading-relaxed max-w-xs mx-auto">
                 {step.desc}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

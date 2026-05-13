@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { animate } from "animejs";
 import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
@@ -11,6 +11,7 @@ const LINKS = [
   { label: "Objetivos", href: "#objetivos" },
   { label: "Tecnología", href: "#tecnologia" },
   { label: "Metodología", href: "#metodologia" },
+  { label: "Alcance", href: "#alcance" },
   { label: "Contacto", href: "#contacto" },
 ];
 
@@ -20,6 +21,20 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("inicio");
+  const navRef = useRef<HTMLElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const underlineRef = useRef<HTMLDivElement>(null);
+
+  // Entrance animation
+  useEffect(() => {
+    if (navRef.current) {
+      animate(navRef.current, {
+        translateY: [-80, 0],
+        duration: 600,
+        ease: "outExpo",
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const handle = () => setScrolled(window.scrollY > 50);
@@ -44,53 +59,87 @@ export default function Navbar() {
     return () => observers.forEach((o) => o.disconnect());
   }, []);
 
+  // Animate mobile menu open/close
+  const toggleMenu = useCallback(() => {
+    const menu = mobileMenuRef.current;
+    if (!menu) return;
+
+    if (!open) {
+      menu.style.display = "block";
+      animate(menu, {
+        height: [0, menu.scrollHeight],
+        opacity: [0, 1],
+        duration: 300,
+        ease: "outExpo",
+      });
+      // Stagger menu items
+      const items = menu.querySelectorAll(".nav-mobile-item");
+      animate(items, {
+        translateX: [-20, 0],
+        opacity: [0, 1],
+        duration: 300,
+        delay: (_el: Element, i: number) => i * 50,
+        ease: "outExpo",
+      });
+    } else {
+      animate(menu, {
+        height: [menu.scrollHeight, 0],
+        opacity: [1, 0],
+        duration: 250,
+        ease: "outQuad",
+        onComplete: () => { menu.style.display = "none"; },
+      });
+    }
+    setOpen(!open);
+  }, [open]);
+
   return (
-    <motion.nav
-      initial={{ y: -80 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.1, 0, 1] }}
+    <nav
+      ref={navRef}
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-white/70 dark:bg-[#080e1a]/85 backdrop-blur-xl saturate-150 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border-b border-primary-lighter/40 dark:border-white/10"
+          ? "bg-white/70 dark:bg-[#060d14]/85 backdrop-blur-xl saturate-150 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border-b border-primary/10 dark:border-white/10"
           : "bg-transparent"
       }`}
+      style={{ transform: "translateY(-80px)" }}
     >
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <motion.a
-          href="#inicio"
-          className="font-[family-name:var(--font-playfair)] text-xl font-bold text-primary dark:text-primary-lighter"
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          VR Insulinización
-        </motion.a>
+        <a href="#inicio" className="flex items-center gap-2">
+          <span className="font-[family-name:var(--font-playfair)] text-lg font-bold text-primary dark:text-primary-lighter">
+            VR Insulinización
+          </span>
+          <span className="hidden sm:inline-block h-4 w-px bg-primary/20 dark:bg-white/20" />
+          <span className="hidden sm:inline-block font-mono text-[9px] text-muted dark:text-primary-lighter/40 tracking-wider">
+            2026
+          </span>
+        </a>
 
         {/* Desktop links + theme toggle */}
         <div className="hidden md:flex items-center gap-6">
-          <ul className="flex gap-6">
+          <ul className="flex gap-5">
             {LINKS.map((l) => {
               const isActive = activeSection === l.href.replace("#", "");
               return (
                 <li key={l.href} className="relative">
                   <a
                     href={l.href}
-                    className={`text-sm font-medium transition-colors duration-300 ${
-                      isActive ? "text-primary-light" : "text-dark/70 dark:text-primary-lighter/70 hover:text-primary-light"
+                    className={`font-mono text-xs tracking-wider transition-colors duration-300 ${
+                      isActive ? "text-primary-light" : "text-muted dark:text-primary-lighter/60 hover:text-primary-light"
                     }`}
                   >
                     {l.label}
                   </a>
                   {isActive && (
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-light to-accent rounded-full"
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    <div
+                      ref={underlineRef}
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-primary-light to-accent"
                     />
                   )}
                 </li>
               );
             })}
           </ul>
+          <div className="h-4 w-px bg-primary/10 dark:bg-white/10" />
           <ThemeToggle />
         </div>
 
@@ -98,7 +147,7 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-1">
           <ThemeToggle />
           <button
-            onClick={() => setOpen(!open)}
+            onClick={toggleMenu}
             className="text-primary dark:text-primary-lighter p-2"
             aria-label="Menu"
           >
@@ -114,41 +163,35 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.1, 0, 1] }}
-            className="md:hidden bg-white/90 dark:bg-[#080e1a]/90 backdrop-blur-xl saturate-150 border-t border-primary-lighter/30 dark:border-white/10 overflow-hidden"
-          >
-            <ul className="flex flex-col py-4 px-6 gap-1">
-              {LINKS.map((l, i) => (
-                <motion.li
-                  key={l.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: i * 0.05, duration: 0.3 }}
-                >
-                  <a
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className={`block py-2.5 text-sm font-medium transition-colors ${
-                      activeSection === l.href.replace("#", "")
-                        ? "text-primary-light"
-                        : "text-dark/70 dark:text-primary-lighter/70 hover:text-primary-light"
-                    }`}
-                  >
-                    {l.label}
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+      <div
+        ref={mobileMenuRef}
+        className="md:hidden bg-white/90 dark:bg-[#060d14]/95 backdrop-blur-xl saturate-150 border-t border-primary/10 dark:border-white/10 overflow-hidden"
+        style={{ display: "none", height: 0 }}
+      >
+        <ul className="flex flex-col py-4 px-6 gap-1">
+          {LINKS.map((l) => (
+            <li key={l.href} className="nav-mobile-item opacity-0">
+              <a
+                href={l.href}
+                onClick={() => {
+                  setOpen(false);
+                  if (mobileMenuRef.current) {
+                    mobileMenuRef.current.style.display = "none";
+                    mobileMenuRef.current.style.height = "0";
+                  }
+                }}
+                className={`block py-2.5 font-mono text-xs tracking-wider transition-colors ${
+                  activeSection === l.href.replace("#", "")
+                    ? "text-primary-light"
+                    : "text-muted dark:text-primary-lighter/60 hover:text-primary-light"
+                }`}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
   );
 }

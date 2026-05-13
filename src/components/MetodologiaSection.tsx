@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useCallback } from "react";
+import { createTimeline, animate, stagger } from "animejs";
 
 const fases = [
   {
@@ -44,53 +44,129 @@ const fases = [
 ];
 
 export default function MetodologiaSection() {
-  const sectionRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const lineScaleY = useTransform(scrollYProgress, [0.1, 0.6], [0, 1]);
+  const ref = useRef<HTMLElement>(null);
+  const fired = useRef(false);
+
+  const runAnimation = useCallback(() => {
+    const tl = createTimeline({ defaults: { ease: "outExpo" } });
+
+    tl.add(".met-title", {
+      translateY: [40, 0],
+      opacity: [0, 1],
+      duration: 800,
+    }, 0);
+
+    tl.add(".met-underline", {
+      scaleX: [0, 1],
+      duration: 700,
+    }, 200);
+
+    tl.add(".met-desc", {
+      translateY: [20, 0],
+      opacity: [0, 1],
+      duration: 600,
+    }, 400);
+
+    // Kanban badge bounces in
+    tl.add(".met-kanban", {
+      scale: [0.5, 1],
+      opacity: [0, 1],
+      duration: 700,
+      ease: "outElastic(1, .7)",
+    }, 600);
+
+    // Kanban pills stagger
+    tl.add(".met-kanban-pill", {
+      translateX: [-20, 0],
+      opacity: [0, 1],
+      duration: 500,
+      delay: stagger(150),
+    }, 800);
+
+    // Progress line grows
+    tl.add(".met-progress-line", {
+      scaleY: [0, 1],
+      duration: 1200,
+      ease: "inOutQuad",
+    }, 900);
+
+    // Dots pop
+    tl.add(".met-dot", {
+      scale: [0, 1],
+      opacity: [0, 1],
+      duration: 500,
+      delay: stagger(200),
+      ease: "outBack",
+    }, 1000);
+
+    // Phase cards slide in
+    tl.add(".met-card", {
+      translateX: [40, 0],
+      opacity: [0, 1],
+      duration: 800,
+      delay: stagger(200),
+    }, 1100);
+
+    // Phase numbers
+    tl.add(".met-num", {
+      scale: [0, 1],
+      rotate: [-10, 0],
+      opacity: [0, 1],
+      duration: 500,
+      delay: stagger(200),
+      ease: "outBack",
+    }, 1300);
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !fired.current) {
+        fired.current = true;
+        runAnimation();
+      }
+    }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [runAnimation]);
+
+  // Floating
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      animate(".met-float", {
+        translateY: [-2, 2, -2],
+        duration: 4500,
+        loop: true,
+        ease: "inOutSine",
+        delay: stagger(300),
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <section id="metodologia" className="py-24 px-4 bg-white dark:bg-[#080e1a]" ref={sectionRef}>
+    <section id="metodologia" className="py-24 px-4 bg-white dark:bg-[#060d14] tech-grid" ref={ref}>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0, 1] }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4">
+        <div className="text-center mb-16">
+          <h2 className="met-title font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4 opacity-0">
             Metodología de Desarrollo
           </h2>
-          <motion.div
-            className="w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent mb-6"
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          />
-          <p className="text-muted dark:text-primary-lighter/60 max-w-2xl mx-auto">
+          <div className="met-underline w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent mb-6" style={{ transformOrigin: "center", transform: "scaleX(0)" }} />
+          <p className="met-desc text-muted dark:text-primary-lighter/60 max-w-2xl mx-auto opacity-0">
             Desarrollo ágil con Kanban en 3 fases secuenciales, orientado a alcanzar un nivel de madurez tecnológica TRL 4.
           </p>
-        </motion.div>
+        </div>
 
         {/* Kanban badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex justify-center mb-14"
-        >
+        <div className="met-kanban flex justify-center mb-14 opacity-0">
           <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-primary-lighter/20 dark:bg-primary/15 border border-primary-lighter/40 dark:border-white/10">
             <div className="flex gap-1.5">
               {["Por hacer", "En progreso", "Finalizado"].map((col, i) => (
                 <span
                   key={col}
-                  className={`text-xs font-medium px-2.5 py-1 rounded-lg ${
+                  className={`met-kanban-pill text-xs font-medium px-2.5 py-1 rounded-lg opacity-0 ${
                     i === 0
                       ? "bg-primary-lighter/50 dark:bg-primary/30 text-primary dark:text-primary-lighter"
                       : i === 1
@@ -104,41 +180,30 @@ export default function MetodologiaSection() {
             </div>
             <span className="text-xs text-muted dark:text-primary-lighter/50">— Tablero Kanban</span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Timeline */}
         <div className="relative space-y-6">
           {/* Progress line */}
           <div className="absolute left-[2.25rem] top-0 bottom-0 w-px bg-primary-lighter/30 dark:bg-white/10">
-            <motion.div
-              className="absolute inset-x-0 top-0 bg-gradient-to-b from-primary-light to-accent origin-top"
-              style={{ scaleY: lineScaleY, height: "100%", width: "100%" }}
+            <div
+              className="met-progress-line absolute inset-x-0 top-0 bg-gradient-to-b from-primary-light to-accent"
+              style={{ height: "100%", width: "100%", transformOrigin: "top", transform: "scaleY(0)" }}
             />
           </div>
 
           {fases.map((fase, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40, rotate: i % 2 === 0 ? -2 : 2 }}
-              whileInView={{ opacity: 1, x: 0, rotate: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.7, delay: 0.1 * i, ease: [0.25, 0.1, 0, 1] }}
-              whileHover={{ y: -3 }}
-              className="group relative flex items-start gap-6 pl-4 md:pl-0"
+              className="met-float group relative flex items-start gap-6 pl-4 md:pl-0"
             >
               {/* Dot on the line */}
-              <motion.div
-                className="relative z-10 flex-shrink-0 w-[1.15rem] h-[1.15rem] ml-[1.65rem] rounded-full bg-primary-light ring-4 ring-white dark:ring-[#080e1a] shadow-md"
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.2 + i * 0.15, type: "spring", stiffness: 300 }}
-              />
+              <div className="met-dot relative z-10 flex-shrink-0 w-[1.15rem] h-[1.15rem] ml-[1.65rem] rounded-full bg-primary-light ring-4 ring-white dark:ring-[#060d14] shadow-md opacity-0" />
 
               {/* Content card */}
-              <div className="flex-1 flex items-start gap-4 p-6 md:p-8 rounded-2xl bg-gradient-to-r from-primary-lighter/20 dark:from-primary/15 to-transparent hover:from-primary-lighter/40 dark:hover:from-primary/25 transition-all duration-500 border border-transparent hover:border-primary-lighter/50 dark:hover:border-white/10 hover:shadow-[0_12px_40px_rgba(26,82,118,0.06)]">
+              <div className="met-card flex-1 flex items-start gap-4 p-6 md:p-8 rounded-2xl bg-gradient-to-r from-primary-lighter/20 dark:from-primary/15 to-transparent hover:from-primary-lighter/40 dark:hover:from-primary/25 transition-all duration-500 border border-transparent hover:border-primary-lighter/50 dark:hover:border-white/10 hover:shadow-[0_12px_40px_rgba(26,82,118,0.06)] opacity-0">
                 {/* Phase number */}
-                <div className="hidden md:flex flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light items-center justify-center text-white font-bold text-xl group-hover:scale-110 group-hover:shadow-[0_8px_25px_rgba(26,82,118,0.25)] transition-all duration-300">
+                <div className="met-num hidden md:flex flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary-light items-center justify-center text-white font-bold text-xl group-hover:scale-110 group-hover:shadow-[0_8px_25px_rgba(26,82,118,0.25)] transition-all duration-300 opacity-0">
                   {fase.num}
                 </div>
 
@@ -167,7 +232,7 @@ export default function MetodologiaSection() {
                   {fase.icon}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

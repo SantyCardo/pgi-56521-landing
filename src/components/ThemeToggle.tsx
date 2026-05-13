@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { animate } from "animejs";
 
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -19,19 +20,27 @@ export default function ThemeToggle() {
       const next = !prev;
       document.documentElement.classList.toggle("dark", next);
       localStorage.setItem("theme", next ? "dark" : "light");
+      // Animate icon swap
+      if (svgRef.current) {
+        animate(svgRef.current, {
+          rotate: [-90, 0],
+          opacity: [0, 1],
+          duration: 300,
+          ease: "outExpo",
+        });
+      }
       return next;
     });
   };
 
   return (
-    <motion.button
+    <button
       onClick={toggle}
-      className="relative w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-lighter hover:bg-primary-lighter/20 dark:hover:bg-white/10 transition-colors"
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
+      className="relative w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-lighter hover:bg-primary-lighter/20 dark:hover:bg-white/10 transition-colors active:scale-95"
       aria-label={dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
-      <motion.svg
+      <svg
+        ref={svgRef}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -39,11 +48,6 @@ export default function ThemeToggle() {
         strokeLinecap="round"
         strokeLinejoin="round"
         className="w-5 h-5"
-        key={dark ? "moon" : "sun"}
-        initial={{ rotate: -90, opacity: 0 }}
-        animate={{ rotate: 0, opacity: 1 }}
-        exit={{ rotate: 90, opacity: 0 }}
-        transition={{ duration: 0.3 }}
       >
         {dark ? (
           <>
@@ -60,7 +64,7 @@ export default function ThemeToggle() {
         ) : (
           <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
         )}
-      </motion.svg>
-    </motion.button>
+      </svg>
+    </button>
   );
 }
