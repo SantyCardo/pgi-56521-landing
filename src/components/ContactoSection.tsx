@@ -10,8 +10,7 @@ const team = [
 ];
 
 const advisors = [
-  { name: "Dra. Ana Maria Ospina Galeano", role: "Asesora temática" },
-  { name: "Dr. Jaime Gomez", role: "Asesor temático" },
+  { name: "FOSUNAB — Fundación Oftalmológica de Santander", role: "Asesor temático institucional" },
 ];
 
 export default function ContactoSection() {
@@ -127,8 +126,8 @@ export default function ContactoSection() {
           </h2>
           <div className="cont-underline w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-lighter to-accent mb-6" style={{ transformOrigin: "center", transform: "scaleX(0)" }} />
           <p className="cont-subtitle text-muted dark:text-primary-lighter/80 max-w-xl mx-auto opacity-0">
-            Proyecto PGI 56521 — Universidad Autónoma de Bucaramanga (UNAB)
-            <br />Facultad de Ingenieria, Programa de Ingenieria de Sistemas
+            Universidad Autónoma de Bucaramanga (UNAB)
+            <br />Facultad de Ingeniería, Programa de Ingeniería de Sistemas
           </p>
         </div>
 
@@ -149,29 +148,26 @@ export default function ContactoSection() {
           ))}
         </div>
 
-        {/* Advisors */}
-        <div className="flex flex-wrap justify-center gap-6 mb-14">
-          {advisors.map((a, i) => (
-            <div key={i} className="cont-advisor flex items-center gap-3 px-5 py-3 rounded-xl bg-primary-lighter/30 dark:bg-white/5 border border-primary-lighter/40 dark:border-white/10 opacity-0">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-5 h-5 text-primary-light dark:text-primary-lighter">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                <path d="M6 12v5c3 3 9 3 12 0v-5" />
+        {/* Institutional Advisor */}
+        <div className="flex justify-center mb-14">
+          <div className="cont-advisor inline-flex items-center gap-4 px-7 py-5 rounded-2xl bg-gradient-to-r from-primary-lighter/30 to-primary-lighter/10 dark:from-white/[0.06] dark:to-white/[0.02] border border-primary-lighter/40 dark:border-white/10 shadow-[0_4px_20px_rgba(26,82,118,0.06)] opacity-0">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white shadow-[0_4px_15px_rgba(26,82,118,0.2)]">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-6 h-6">
+                <path d="M3 21h18M5 21V7l8-4 8 4v14" />
+                <path d="M9 21v-4a3 3 0 016 0v4" />
+                <path d="M10 10h.01M14 10h.01" />
               </svg>
-              <div>
-                <p className="text-sm font-medium text-primary dark:text-white">{a.name}</p>
-                <p className="text-muted dark:text-primary-lighter/60 text-xs">{a.role}</p>
-              </div>
             </div>
-          ))}
+            <div>
+              <p className="text-sm font-semibold text-primary dark:text-white">{advisors[0].name}</p>
+              <p className="text-primary-light dark:text-primary-lighter/60 text-xs mt-0.5">{advisors[0].role}</p>
+            </div>
+          </div>
         </div>
 
         {/* Contact info */}
         <div className="text-center space-y-4">
           {[
-            {
-              icon: <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></>,
-              content: <a href="mailto:santiagocardona2004@gmail.com" className="text-primary-light dark:text-primary-lighter hover:text-primary dark:hover:text-white transition-colors">santiagocardona2004@gmail.com</a>,
-            },
             {
               icon: <><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" /><circle cx="12" cy="10" r="3" /></>,
               content: <span className="text-muted dark:text-primary-lighter/80">Bucaramanga, Colombia</span>,

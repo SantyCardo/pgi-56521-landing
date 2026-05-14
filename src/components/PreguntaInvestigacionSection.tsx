@@ -90,7 +90,7 @@ export default function PreguntaInvestigacionSection() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="preg-title font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4 opacity-0">
-            Pregunta de Investigaci&oacute;n
+            Pregunta Problema
           </h2>
           <div className="preg-line w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-primary-light to-accent" style={{ transformOrigin: "center", transform: "scaleX(0)" }} />
         </div>

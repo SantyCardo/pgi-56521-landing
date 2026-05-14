@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, MouseEvent, useEffect, useCallback } from "react";
-import { createTimeline, animate, stagger } from "animejs";
+import { motion, AnimatePresence } from "framer-motion";
+import { createTimeline, animate, stagger, utils } from "animejs";
 import AnimatedCounter from "./AnimatedCounter";
 
 function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -30,6 +31,108 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
   );
 }
 
+/* ── SVG Medical Icons ── */
+function SyringeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <path d="M18 2l4 4M7.5 13.5L2 19l3 3 5.5-5.5M15 3l-8.5 8.5 6 6L21 9" />
+      <line x1="10" y1="11" x2="8" y2="13" />
+      <line x1="13" y1="8" x2="11" y2="10" />
+    </svg>
+  );
+}
+
+function VRIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <rect x="2" y="7" width="20" height="10" rx="3" />
+      <circle cx="8" cy="12" r="2" />
+      <circle cx="16" cy="12" r="2" />
+      <path d="M10 12h4" />
+    </svg>
+  );
+}
+
+function HeartPulseIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <path d="M3 12h4l3-9 4 18 3-9h4" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="M9 12l2 2 4-4" />
+    </svg>
+  );
+}
+
+function BookIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+    </svg>
+  );
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className={className}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+const ORBITAL_ITEMS = [
+  {
+    icon: SyringeIcon,
+    label: "Insulinización",
+    title: "Técnica de Insulinización",
+    desc: "Simulación del proceso completo: preparación del pen, selección de dosis, inyección subcutánea y desecho seguro de la aguja.",
+    color: "#e74c3c",
+  },
+  {
+    icon: VRIcon,
+    label: "Realidad Virtual",
+    title: "Experiencia VR Inmersiva",
+    desc: "Entorno 3D con Google Cardboard, navegación por mirada (gaze) y 3 DOF. Sin controles externos ni internet.",
+    color: "#2980b9",
+  },
+  {
+    icon: HeartPulseIcon,
+    label: "Salud",
+    title: "Impacto en Salud",
+    desc: "830M de personas con diabetes en el mundo. Reducción de ansiedad y mejor adherencia terapéutica mediante educación inmersiva.",
+    color: "#1a5276",
+  },
+  {
+    icon: ShieldIcon,
+    label: "Seguridad",
+    title: "Práctica sin Riesgo",
+    desc: "El paciente practica tantas veces como necesite en un entorno seguro antes de la primera inyección real.",
+    color: "#27ae60",
+  },
+  {
+    icon: BookIcon,
+    label: "Educación",
+    title: "5 Lecciones Clínicas",
+    desc: "Vía de administración, rotación de sitios, manejo de agujas, almacenamiento de insulina y tips del pen.",
+    color: "#0ea5e9",
+  },
+  {
+    icon: EyeIcon,
+    label: "Inmersión",
+    title: "Accesibilidad Local",
+    desc: "APK offline sin internet. Distribución local en dispositivos Android, sin costos recurrentes ni servidores.",
+    color: "#8e44ad",
+  },
+];
+
 const STATS = [
   { num: "830M", label: "Personas con diabetes en el mundo (OMS)" },
   { num: "3M+", label: "Casos en Colombia (FID 2024)" },
@@ -40,6 +143,30 @@ const STATS = [
 export default function ProyectoSection() {
   const ref = useRef<HTMLElement>(null);
   const fired = useRef(false);
+  const [rotation, setRotation] = useState(0);
+  const [activeNode, setActiveNode] = useState<number | null>(null);
+  const frameRef = useRef<number>(0);
+
+  // Slow orbital rotation — pauses when node selected
+  useEffect(() => {
+    if (activeNode !== null) return;
+    const tick = () => {
+      setRotation((prev) => (prev + 0.08) % 360);
+      frameRef.current = requestAnimationFrame(tick);
+    };
+    frameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [activeNode]);
+
+  const toggleNode = (i: number) => {
+    if (activeNode === i) {
+      setActiveNode(null);
+    } else {
+      setActiveNode(i);
+      const targetAngle = (i / ORBITAL_ITEMS.length) * 360;
+      setRotation(((270 - targetAngle) % 360 + 360) % 360);
+    }
+  };
 
   const runAnimation = useCallback(() => {
     const tl = createTimeline({ defaults: { ease: "outExpo" } });
@@ -63,12 +190,18 @@ export default function ProyectoSection() {
       delay: stagger(150),
     }, 400);
 
-    tl.add(".proy-venn", {
-      scale: [0.5, 1],
+    // Orbital ring entrance
+    tl.add(".proy-orbit", {
+      scale: [0.6, 1],
       opacity: [0, 1],
-      rotate: [-10, 0],
-      duration: 1000,
+      duration: 1200,
     }, 500);
+
+    // SVG ring draw
+    tl.add(".proy-ring-path", {
+      strokeDashoffset: [utils.get(".proy-ring-path", "strokeDasharray") as unknown as number, 0],
+      duration: 2000,
+    }, 700);
 
     tl.add(".proy-stat", {
       translateY: [40, 0],
@@ -107,7 +240,12 @@ export default function ProyectoSection() {
   }, []);
 
   return (
-    <section id="proyecto" className="relative py-24 px-4 bg-white dark:bg-[#060d14] overflow-hidden tech-grid" ref={ref}>
+    <section
+      id="proyecto"
+      className="relative py-24 px-4 bg-white dark:bg-[#060d14] overflow-hidden tech-grid"
+      ref={ref}
+      onClick={() => setActiveNode(null)}
+    >
       <div className="max-w-5xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 className="proy-title font-[family-name:var(--font-playfair)] text-3xl md:text-4xl font-bold text-primary dark:text-primary-lighter mb-4 opacity-0">
@@ -139,26 +277,185 @@ export default function ProyectoSection() {
             </p>
           </div>
 
-          <div className="proy-venn relative opacity-0">
-            <div className="aspect-square max-w-md mx-auto relative">
-              <svg viewBox="0 0 400 400" className="w-full h-full">
-                <circle cx="175" cy="155" r="110" fill="#1a5276" opacity="0.12" stroke="#1a5276" strokeWidth="2" />
-                <text x="145" y="110" fontSize="13" fill="#1a5276" fontWeight="600" textAnchor="middle">Educación en</text>
-                <text x="145" y="128" fontSize="13" fill="#1a5276" fontWeight="600" textAnchor="middle">Insulinización</text>
+          {/* Orbital Carousel */}
+          <div className="proy-orbit relative flex items-center justify-center opacity-0">
+            <div className="relative w-[280px] h-[280px] md:w-[360px] md:h-[360px]">
+              {/* Pulsing center glow */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  className="w-28 h-28 md:w-36 md:h-36 rounded-full animate-pulse"
+                  style={{
+                    background: "radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)",
+                    animationDuration: "3s",
+                  }}
+                />
+              </div>
 
-                <circle cx="225" cy="155" r="110" fill="#2980b9" opacity="0.12" stroke="#2980b9" strokeWidth="2" />
-                <text x="270" y="110" fontSize="13" fill="#2980b9" fontWeight="600" textAnchor="middle">Experiencia</text>
-                <text x="270" y="128" fontSize="13" fill="#2980b9" fontWeight="600" textAnchor="middle">Inmersiva VR</text>
-
-                <circle cx="200" cy="240" r="110" fill="#0ea5e9" opacity="0.12" stroke="#0ea5e9" strokeWidth="2" />
-                <text x="200" y="320" fontSize="13" fill="#0ea5e9" fontWeight="600" textAnchor="middle">Accesibilidad</text>
-                <text x="200" y="338" fontSize="13" fill="#0ea5e9" fontWeight="600" textAnchor="middle">Local / Offline</text>
-
-                <circle cx="200" cy="200" r="4" fill="#1a5276" />
-                <text x="200" y="195" fontSize="11" fill="#1a5276" fontWeight="700" textAnchor="middle">Nuestro</text>
-                <text x="200" y="211" fontSize="11" fill="#1a5276" fontWeight="700" textAnchor="middle">Prototipo</text>
+              {/* Orbit rings - SVG */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 360 360">
+                <circle
+                  className="proy-ring-path"
+                  cx="180"
+                  cy="180"
+                  r="135"
+                  fill="none"
+                  stroke="rgba(41,128,185,0.25)"
+                  strokeWidth="1"
+                  strokeDasharray="848"
+                  strokeDashoffset="848"
+                />
+                <circle
+                  className="proy-ring-path"
+                  cx="180"
+                  cy="180"
+                  r="110"
+                  fill="none"
+                  stroke="rgba(14,165,233,0.2)"
+                  strokeWidth="1"
+                  strokeDasharray="691"
+                  strokeDashoffset="691"
+                />
+                <circle
+                  cx="180"
+                  cy="180"
+                  r="85"
+                  fill="none"
+                  stroke="rgba(26,82,118,0.12)"
+                  strokeWidth="1"
+                  strokeDasharray="4 6"
+                />
               </svg>
+
+              {/* Center VR Headset */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 md:w-24 md:h-24">
+                  <svg viewBox="0 0 200 200" className="w-full h-full" fill="none">
+                    <rect x="30" y="65" width="140" height="70" rx="20" fill="#1a5276" />
+                    <rect x="40" y="75" width="48" height="40" rx="10" fill="#2980b9" />
+                    <circle cx="64" cy="95" r="12" fill="#d4e6f1" opacity="0.5" />
+                    <circle cx="64" cy="95" r="5" fill="#ffffff" opacity="0.3" />
+                    <rect x="112" y="75" width="48" height="40" rx="10" fill="#2980b9" />
+                    <circle cx="136" cy="95" r="12" fill="#d4e6f1" opacity="0.5" />
+                    <circle cx="136" cy="95" r="5" fill="#ffffff" opacity="0.3" />
+                    <path d="M25 100 Q20 85 30 72" stroke="#1a5276" strokeWidth="5" fill="none" strokeLinecap="round" />
+                    <path d="M175 100 Q180 85 170 72" stroke="#1a5276" strokeWidth="5" fill="none" strokeLinecap="round" />
+                    <rect x="90" y="100" width="20" height="15" rx="5" fill="#0c2d42" />
+                    <path d="M64 75 L64 45 M136 75 L136 45" stroke="#0ea5e9" strokeWidth="2" opacity="0.4" strokeDasharray="4 4">
+                      <animate attributeName="stroke-dashoffset" from="8" to="0" dur="1s" repeatCount="indefinite" />
+                    </path>
+                  </svg>
+                </div>
+              </div>
+
+              {/* Orbital nodes */}
+              {ORBITAL_ITEMS.map((item, i) => {
+                const angle = ((i / ORBITAL_ITEMS.length) * 360 + rotation) % 360;
+                const radian = (angle * Math.PI) / 180;
+                const radius = 130;
+                const x = radius * Math.cos(radian);
+                const y = radius * Math.sin(radian);
+                const Icon = item.icon;
+                const isActive = activeNode === i;
+
+                return (
+                  <div
+                    key={i}
+                    className="absolute cursor-pointer"
+                    style={{
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                      zIndex: isActive ? 200 : Math.round(100 + 50 * Math.cos(radian)),
+                      transition: "transform 0.7s ease",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleNode(i);
+                    }}
+                  >
+                    {isActive && (
+                      <div
+                        className="absolute rounded-full animate-pulse"
+                        style={{
+                          background: `radial-gradient(circle, ${item.color}33 0%, transparent 70%)`,
+                          width: 56,
+                          height: 56,
+                          left: -8,
+                          top: -8,
+                        }}
+                      />
+                    )}
+                    <div
+                      className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 group shadow-sm dark:shadow-none ${
+                        isActive
+                          ? "bg-white dark:bg-[#0c2d42] scale-125 shadow-lg"
+                          : "bg-white/80 dark:bg-[#0c2d42]/80 hover:bg-primary-lighter/50 dark:hover:bg-primary/30"
+                      }`}
+                      style={{
+                        borderWidth: 2,
+                        borderColor: isActive ? item.color : "rgba(41,128,185,0.3)",
+                        boxShadow: isActive ? `0 0 20px ${item.color}40` : undefined,
+                      }}
+                    >
+                      <Icon
+                        className={`w-4 h-4 transition-colors ${
+                          isActive ? "text-accent" : "text-primary dark:text-primary-lighter/70 group-hover:text-accent"
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[7px] md:text-[8px] tracking-wider transition-all duration-300 ${
+                        isActive
+                          ? "text-primary dark:text-primary-lighter scale-110"
+                          : "text-muted dark:text-primary-lighter/40"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Detail card */}
+            <AnimatePresence>
+              {activeNode !== null && (
+                <motion.div
+                  key={activeNode}
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-64 md:w-72 z-[300]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0, 1] }}
+                >
+                  <div className="relative bg-white/95 dark:bg-[#0c2d42]/95 backdrop-blur-md rounded-xl border border-primary-lighter/40 dark:border-white/10 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
+                    <div
+                      className="absolute top-0 left-4 right-4 h-0.5 rounded-full"
+                      style={{ backgroundColor: ORBITAL_ITEMS[activeNode].color }}
+                    />
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="font-mono text-xs tracking-wider font-semibold text-primary dark:text-primary-lighter">
+                        {ORBITAL_ITEMS[activeNode].title}
+                      </h4>
+                      <button
+                        className="text-muted dark:text-primary-lighter/50 hover:text-primary dark:hover:text-primary-lighter transition-colors flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveNode(null);
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <p className="text-muted dark:text-primary-lighter/60 text-xs leading-relaxed">
+                      {ORBITAL_ITEMS[activeNode].desc}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

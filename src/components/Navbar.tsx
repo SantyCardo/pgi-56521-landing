@@ -9,10 +9,11 @@ const LINKS = [
   { label: "Proyecto", href: "#proyecto" },
   { label: "Problema", href: "#problema" },
   { label: "Objetivos", href: "#objetivos" },
+  { label: "Cronograma", href: "#cronograma" },
+  { label: "Metodología", href: "#metodologia-dev" },
   { label: "Tecnología", href: "#tecnologia" },
-  { label: "Metodología", href: "#metodologia" },
   { label: "Alcance", href: "#alcance" },
-  { label: "Contacto", href: "#contacto" },
+  { label: "Equipo", href: "#contacto" },
 ];
 
 const SECTION_IDS = LINKS.map((l) => l.href.replace("#", ""));

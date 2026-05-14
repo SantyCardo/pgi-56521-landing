@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useCallback } from "react";
 import { animate, createTimeline, stagger, utils } from "animejs";
 
 /* ── Starry Canvas ── */
@@ -97,149 +96,207 @@ function GridBackground() {
   );
 }
 
-/* ── SVG Medical Icons for orbital ring ── */
-function SyringeIcon({ className }: { className?: string }) {
+/* ── Detailed Insulin Pen SVG ── */
+function InsulinPenSVG() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <path d="M18 2l4 4M7.5 13.5L2 19l3 3 5.5-5.5M15 3l-8.5 8.5 6 6L21 9" />
-      <line x1="10" y1="11" x2="8" y2="13" />
-      <line x1="13" y1="8" x2="11" y2="10" />
+    <svg viewBox="0 0 400 500" className="w-full h-full" fill="none">
+      <defs>
+        {/* Pen body gradient */}
+        <linearGradient id="penBody" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#1a3a5c" />
+          <stop offset="30%" stopColor="#2a5a8c" />
+          <stop offset="50%" stopColor="#3a7ab8" />
+          <stop offset="70%" stopColor="#2a5a8c" />
+          <stop offset="100%" stopColor="#1a3a5c" />
+        </linearGradient>
+        {/* Cap gradient */}
+        <linearGradient id="penCap" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#0c2d42" />
+          <stop offset="40%" stopColor="#1a5276" />
+          <stop offset="60%" stopColor="#1a5276" />
+          <stop offset="100%" stopColor="#0c2d42" />
+        </linearGradient>
+        {/* Insulin liquid */}
+        <linearGradient id="insulin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(14,165,233,0.05)" />
+          <stop offset="100%" stopColor="rgba(14,165,233,0.2)" />
+        </linearGradient>
+        {/* Metallic needle */}
+        <linearGradient id="needle" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#8899aa" />
+          <stop offset="40%" stopColor="#d4dde6" />
+          <stop offset="60%" stopColor="#e8eef4" />
+          <stop offset="100%" stopColor="#8899aa" />
+        </linearGradient>
+        {/* Button gradient */}
+        <linearGradient id="penButton" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#0a1f33" />
+          <stop offset="50%" stopColor="#163a5c" />
+          <stop offset="100%" stopColor="#0a1f33" />
+        </linearGradient>
+        {/* Glow filter */}
+        <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="glowStrong" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="12" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        {/* Reflection highlight */}
+        <linearGradient id="highlight" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+          <stop offset="40%" stopColor="rgba(255,255,255,0.15)" />
+          <stop offset="60%" stopColor="rgba(255,255,255,0.15)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </linearGradient>
+      </defs>
+
+      {/* Ambient glow behind pen */}
+      <ellipse cx="200" cy="250" rx="60" ry="200" fill="rgba(14,165,233,0.06)" filter="url(#glowStrong)" />
+
+      {/* ── NEEDLE (fine 31G) ── */}
+      {/* Needle shaft — thin and short like a real 31G x 5mm */}
+      <rect x="198.5" y="87" width="3" height="23" rx="0.5" fill="url(#needle)" />
+      {/* Needle tip */}
+      <polygon points="200,81 198.5,87 201.5,87" fill="url(#needle)" />
+      {/* Needle highlight */}
+      <rect x="199.5" y="82" width="1" height="27" rx="0.5" fill="rgba(255,255,255,0.3)" />
+      {/* Tiny drop */}
+      <circle cx="200" cy="79" r="2" fill="rgba(14,165,233,0.4)" filter="url(#glowSoft)">
+        <animate attributeName="r" values="2;3;2" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="3s" repeatCount="indefinite" />
+      </circle>
+
+      {/* ── NEEDLE HUB ── */}
+      <rect x="186" y="108" width="28" height="22" rx="4" fill="#c0cdd8" stroke="#8899aa" strokeWidth="1" />
+      <rect x="190" y="112" width="20" height="3" rx="1" fill="rgba(255,255,255,0.2)" />
+      {/* Threading lines */}
+      <line x1="186" y1="118" x2="214" y2="118" stroke="rgba(136,153,170,0.4)" strokeWidth="0.5" />
+      <line x1="186" y1="122" x2="214" y2="122" stroke="rgba(136,153,170,0.4)" strokeWidth="0.5" />
+      <line x1="186" y1="126" x2="214" y2="126" stroke="rgba(136,153,170,0.4)" strokeWidth="0.5" />
+
+      {/* ── CARTRIDGE / WINDOW ── */}
+      {/* Outer cartridge housing */}
+      <rect x="181" y="130" width="38" height="120" rx="6" fill="url(#penBody)" stroke="rgba(14,165,233,0.15)" strokeWidth="1" />
+      {/* Inner insulin window */}
+      <rect x="187" y="138" width="26" height="100" rx="4" fill="rgba(14,165,233,0.05)" stroke="rgba(14,165,233,0.2)" strokeWidth="1" />
+      {/* Insulin liquid level */}
+      <rect x="188" y="168" width="24" height="69" rx="3" fill="url(#insulin)">
+        <animate attributeName="y" values="168;172;168" dur="5s" repeatCount="indefinite" />
+        <animate attributeName="height" values="69;65;69" dur="5s" repeatCount="indefinite" />
+      </rect>
+      {/* Dose scale markings */}
+      {[0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88].map((offset, i) => (
+        <g key={i}>
+          <line
+            x1={i % 2 === 0 ? "187" : "189"}
+            y1={`${140 + offset}`}
+            x2="193"
+            y2={`${140 + offset}`}
+            stroke="rgba(14,165,233,0.3)"
+            strokeWidth={i % 2 === 0 ? "0.8" : "0.5"}
+          />
+          {i % 2 === 0 && (
+            <text x="184" y={`${143 + offset}`} fontSize="5" fill="rgba(14,165,233,0.35)" textAnchor="end" fontFamily="monospace">
+              {Math.round((12 - i) * (80 / 12))}
+            </text>
+          )}
+        </g>
+      ))}
+      {/* Reflection strip on cartridge */}
+      <rect x="204" y="138" width="4" height="100" rx="2" fill="url(#highlight)" />
+
+      {/* ── PEN BODY ── */}
+      <rect x="178" y="250" width="44" height="140" rx="8" fill="url(#penBody)" stroke="rgba(41,128,185,0.2)" strokeWidth="1" />
+      {/* Body highlight strip */}
+      <rect x="206" y="255" width="5" height="130" rx="2.5" fill="url(#highlight)" />
+      {/* Grip texture */}
+      {[0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108].map((offset, i) => (
+        <line
+          key={i}
+          x1="180"
+          y1={`${255 + offset}`}
+          x2="220"
+          y2={`${255 + offset}`}
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="0.8"
+        />
+      ))}
+      {/* Label area */}
+      <rect x="184" y="280" width="32" height="60" rx="3" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+      <text x="200" y="300" fontSize="5" fill="rgba(255,255,255,0.3)" textAnchor="middle" fontFamily="monospace">INSULIN</text>
+      <text x="200" y="308" fontSize="4" fill="rgba(14,165,233,0.4)" textAnchor="middle" fontFamily="monospace">100 U/mL</text>
+      <text x="200" y="316" fontSize="3.5" fill="rgba(255,255,255,0.2)" textAnchor="middle" fontFamily="monospace">3 mL</text>
+      {/* Medical cross icon */}
+      <rect x="197" y="322" width="6" height="2" rx="0.5" fill="rgba(14,165,233,0.3)" />
+      <rect x="199" y="320" width="2" height="6" rx="0.5" fill="rgba(14,165,233,0.3)" />
+
+      {/* ── DOSE SELECTOR ── */}
+      <rect x="182" y="390" width="36" height="30" rx="5" fill="url(#penCap)" stroke="rgba(41,128,185,0.25)" strokeWidth="1" />
+      {/* Selector ring grooves */}
+      {[0, 4, 8, 12, 16, 20, 24].map((offset, i) => (
+        <line
+          key={i}
+          x1="183"
+          y1={`${393 + offset}`}
+          x2="217"
+          y2={`${393 + offset}`}
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth="0.5"
+        />
+      ))}
+      {/* Dose number window */}
+      <rect x="192" y="398" width="16" height="12" rx="2" fill="rgba(0,0,0,0.3)" stroke="rgba(14,165,233,0.2)" strokeWidth="0.5" />
+      <text x="200" y="408" fontSize="8" fill="rgba(14,165,233,0.7)" textAnchor="middle" fontFamily="monospace" fontWeight="bold">12</text>
+
+      {/* ── INJECTION BUTTON ── */}
+      <rect x="185" y="420" width="30" height="45" rx="10" fill="url(#penButton)" stroke="rgba(41,128,185,0.2)" strokeWidth="1" />
+      {/* Button top cap */}
+      <ellipse cx="200" cy="462" rx="12" ry="4" fill="rgba(14,165,233,0.08)" stroke="rgba(14,165,233,0.15)" strokeWidth="0.5" />
+      {/* Button highlight */}
+      <rect x="194" y="425" width="3" height="30" rx="1.5" fill="rgba(255,255,255,0.06)" />
+
+      {/* ── FLOATING TECH ANNOTATIONS ── */}
+      {/* Left annotation - needle gauge */}
+      <g className="hero-pen-label" opacity="0">
+        <line x1="120" y1="95" x2="196" y2="95" stroke="rgba(14,165,233,0.3)" strokeWidth="0.5" strokeDasharray="3 2" />
+        <circle cx="120" cy="95" r="2.5" fill="rgba(14,165,233,0.4)" />
+        <text x="116" y="99" fontSize="12" fill="rgba(14,165,233,0.7)" textAnchor="end" fontFamily="monospace" fontWeight="600">31G x 5mm</text>
+      </g>
+      {/* Right annotation - cartridge */}
+      <g className="hero-pen-label" opacity="0">
+        <line x1="221" y1="190" x2="280" y2="190" stroke="rgba(14,165,233,0.3)" strokeWidth="0.5" strokeDasharray="3 2" />
+        <circle cx="280" cy="190" r="2.5" fill="rgba(14,165,233,0.4)" />
+        <text x="284" y="194" fontSize="12" fill="rgba(14,165,233,0.7)" textAnchor="start" fontFamily="monospace" fontWeight="600">Cartucho 3mL</text>
+      </g>
+      {/* Left annotation - dose */}
+      <g className="hero-pen-label" opacity="0">
+        <line x1="110" y1="405" x2="190" y2="405" stroke="rgba(14,165,233,0.3)" strokeWidth="0.5" strokeDasharray="3 2" />
+        <circle cx="110" cy="405" r="2.5" fill="rgba(14,165,233,0.4)" />
+        <text x="106" y="409" fontSize="12" fill="rgba(14,165,233,0.7)" textAnchor="end" fontFamily="monospace" fontWeight="600">Selector dosis</text>
+      </g>
+      {/* Right annotation - button */}
+      <g className="hero-pen-label" opacity="0">
+        <line x1="217" y1="445" x2="280" y2="445" stroke="rgba(14,165,233,0.3)" strokeWidth="0.5" strokeDasharray="3 2" />
+        <circle cx="280" cy="445" r="2.5" fill="rgba(14,165,233,0.4)" />
+        <text x="284" y="449" fontSize="12" fill="rgba(14,165,233,0.7)" textAnchor="start" fontFamily="monospace" fontWeight="600">Inyección</text>
+      </g>
+
+      {/* Ambient scan line */}
+      <rect x="175" y="0" width="50" height="2" rx="1" fill="rgba(14,165,233,0.15)">
+        <animate attributeName="y" values="0;500;0" dur="8s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0;0.3;0" dur="8s" repeatCount="indefinite" />
+      </rect>
     </svg>
   );
 }
-
-function VRIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <rect x="2" y="7" width="20" height="10" rx="3" />
-      <circle cx="8" cy="12" r="2" />
-      <circle cx="16" cy="12" r="2" />
-      <path d="M10 12h4" />
-    </svg>
-  );
-}
-
-function HeartPulseIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <path d="M3 12h4l3-9 4 18 3-9h4" />
-    </svg>
-  );
-}
-
-function ShieldIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="M9 12l2 2 4-4" />
-    </svg>
-  );
-}
-
-function BookIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
-      <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
-    </svg>
-  );
-}
-
-function EyeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      className={className}
-    >
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-const ORBITAL_ITEMS = [
-  {
-    icon: SyringeIcon,
-    label: "Insulinización",
-    title: "Técnica de Insulinización",
-    desc: "Simulación del proceso completo: preparación del pen, selección de dosis, inyección subcutánea y desecho seguro de la aguja.",
-    color: "#e74c3c",
-  },
-  {
-    icon: VRIcon,
-    label: "Realidad Virtual",
-    title: "Experiencia VR Inmersiva",
-    desc: "Entorno 3D con Google Cardboard, navegación por mirada (gaze) y 3 DOF. Sin controles externos ni internet.",
-    color: "#2980b9",
-  },
-  {
-    icon: HeartPulseIcon,
-    label: "Salud",
-    title: "Impacto en Salud",
-    desc: "830M de personas con diabetes en el mundo. Reducción de ansiedad y mejor adherencia terapéutica mediante educación inmersiva.",
-    color: "#1a5276",
-  },
-  {
-    icon: ShieldIcon,
-    label: "Seguridad",
-    title: "Práctica sin Riesgo",
-    desc: "El paciente practica tantas veces como necesite en un entorno seguro antes de la primera inyección real.",
-    color: "#27ae60",
-  },
-  {
-    icon: BookIcon,
-    label: "Educación",
-    title: "5 Lecciones Clínicas",
-    desc: "Vía de administración, rotación de sitios, manejo de agujas, almacenamiento de insulina y tips del pen.",
-    color: "#0ea5e9",
-  },
-  {
-    icon: EyeIcon,
-    label: "Inmersión",
-    title: "Accesibilidad Local",
-    desc: "APK offline sin internet. Distribución local en dispositivos Android, sin costos recurrentes ni servidores.",
-    color: "#8e44ad",
-  },
-];
 
 /* ── Main Hero ── */
 export default function HeroTechnical() {
@@ -250,34 +307,7 @@ export default function HeroTechnical() {
   const authorsRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<HTMLDivElement>(null);
-  const cornerRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const techLabelsRef = useRef<HTMLDivElement>(null);
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState(0);
-  const [activeNode, setActiveNode] = useState<number | null>(null);
-  const frameRef = useRef<number>(0);
-
-  // Slow orbital rotation — pauses when node selected
-  useEffect(() => {
-    if (activeNode !== null) return;
-    const tick = () => {
-      setRotation((prev) => (prev + 0.08) % 360);
-      frameRef.current = requestAnimationFrame(tick);
-    };
-    frameRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameRef.current);
-  }, [activeNode]);
-
-  const toggleNode = (i: number) => {
-    if (activeNode === i) {
-      setActiveNode(null);
-    } else {
-      setActiveNode(i);
-      // Snap selected node to top (270°)
-      const targetAngle = (i / ORBITAL_ITEMS.length) * 360;
-      setRotation(((270 - targetAngle) % 360 + 360) % 360);
-    }
-  };
+  const penRef = useRef<HTMLDivElement>(null);
 
   // anime.js entrance animations
   useEffect(() => {
@@ -400,27 +430,29 @@ export default function HeroTechnical() {
       1600
     );
 
-    // Orbital ring
-    if (orbitRef.current) {
+    // Insulin pen entrance
+    if (penRef.current) {
       tl.add(
-        orbitRef.current,
+        penRef.current,
         {
-          scale: [0.6, 1],
+          translateY: [60, 0],
           opacity: [0, 1],
+          scale: [0.85, 1],
           duration: 1200,
         },
         600
       );
     }
 
-    // SVG line drawing for orbit ring
+    // Pen labels
     tl.add(
-      ".orbit-ring-path",
+      ".hero-pen-label",
       {
-        strokeDashoffset: [utils.get(".orbit-ring-path", "strokeDasharray") as unknown as number, 0],
-        duration: 2000,
+        opacity: [0, 1],
+        duration: 600,
+        delay: stagger(200),
       },
-      800
+      1800
     );
 
     return () => {};
@@ -450,7 +482,6 @@ export default function HeroTechnical() {
     <section
       ref={sectionRef}
       className="relative min-h-screen flex flex-col items-center overflow-hidden bg-[#f8fbfe] dark:bg-[#060d14]"
-      onClick={() => setActiveNode(null)}
     >
       {/* Backgrounds */}
       <StarryCanvas />
@@ -525,8 +556,6 @@ export default function HeroTechnical() {
         }}
       />
 
-      {/* Top spacer for Navbar */}
-
       {/* Main content area */}
       <div className="relative z-10 flex flex-1 w-full max-w-7xl mx-auto items-center px-6 md:px-12 pt-20 pb-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full">
@@ -562,7 +591,7 @@ export default function HeroTechnical() {
                 className="font-[family-name:var(--font-playfair)] text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-1"
               >
                 <span className="title-word inline-block text-primary dark:text-primary-lighter opacity-0">
-                  Insulinizaci&oacute;n
+                  Insulinización
                 </span>
                 <br />
                 <span
@@ -591,7 +620,7 @@ export default function HeroTechnical() {
               className="font-mono text-muted dark:text-primary-lighter/60 text-xs md:text-sm leading-relaxed mb-6 opacity-0"
             >
               Prototipo educativo inmersivo para el fortalecimiento de la
-              t&eacute;cnica de aplicaci&oacute;n de insulina en pacientes
+              técnica de aplicación de insulina en pacientes
               adultos con diabetes tipo II
             </p>
 
@@ -604,7 +633,7 @@ export default function HeroTechnical() {
                 </span>
               </div>
               <p className="font-mono text-xs md:text-sm text-primary/70 dark:text-primary-lighter/70 pl-8">
-                Brayan Steven Le&oacute;n Martinez
+                Brayan Steven León Martinez
               </p>
               <p className="font-mono text-xs md:text-sm text-primary/70 dark:text-primary-lighter/70 pl-8">
                 Santiago Cardona Prada
@@ -616,7 +645,7 @@ export default function HeroTechnical() {
                 </span>
               </div>
               <p className="font-mono text-xs md:text-sm text-primary/70 dark:text-primary-lighter/70 pl-8">
-                Leonardo Stiven Pardo Ni&ntilde;o
+                Leonardo Stiven Pardo Niño
               </p>
             </div>
 
@@ -655,280 +684,29 @@ export default function HeroTechnical() {
               </span>
               <div className="tech-label flex-1 h-px bg-gradient-to-r from-primary/15 dark:from-white/15 to-transparent opacity-0" />
               <span className="tech-label font-mono text-[9px] text-primary/40 dark:text-primary-light/50 tracking-[0.15em] opacity-0">
-                FUNDACI&Oacute;N CL&Iacute;NICA UNAB
+                FUNDACIÓN CLÍNICA UNAB
               </span>
             </div>
           </div>
 
-          {/* Right: Orbital visualization */}
+          {/* Right: Insulin Pen Illustration */}
           <div
-            ref={orbitRef}
+            ref={penRef}
             className="relative flex items-center justify-center opacity-0"
           >
-            <div className="relative w-[320px] h-[320px] md:w-[420px] md:h-[420px]">
-              {/* Pulsing center glow */}
+            <div className="relative w-[280px] h-[420px] md:w-[340px] md:h-[480px]">
+              {/* Pulsing ambient glow */}
               <div className="pulse-glow absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full"
+                  className="w-40 h-80 md:w-48 md:h-96 rounded-full"
                   style={{
                     background:
-                      "radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 70%)",
+                      "radial-gradient(ellipse, rgba(14,165,233,0.1) 0%, transparent 70%)",
                   }}
                 />
               </div>
-
-              {/* Orbit rings - SVG */}
-              <svg
-                className="absolute inset-0 w-full h-full"
-                viewBox="0 0 420 420"
-              >
-                <circle
-                  className="orbit-ring-path"
-                  cx="210"
-                  cy="210"
-                  r="160"
-                  fill="none"
-                  stroke="rgba(41,128,185,0.25)"
-                  strokeWidth="1"
-                  strokeDasharray="1005"
-                  strokeDashoffset="1005"
-                />
-                <circle
-                  className="orbit-ring-path"
-                  cx="210"
-                  cy="210"
-                  r="130"
-                  fill="none"
-                  stroke="rgba(14,165,233,0.2)"
-                  strokeWidth="1"
-                  strokeDasharray="817"
-                  strokeDashoffset="817"
-                />
-                {/* Inner dashed ring */}
-                <circle
-                  cx="210"
-                  cy="210"
-                  r="100"
-                  fill="none"
-                  stroke="rgba(26,82,118,0.12)"
-                  strokeWidth="1"
-                  strokeDasharray="4 6"
-                />
-              </svg>
-
-              {/* Center VR Headset SVG */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 md:w-28 md:h-28">
-                  <svg
-                    viewBox="0 0 200 200"
-                    className="w-full h-full"
-                    fill="none"
-                  >
-                    <rect
-                      x="30"
-                      y="65"
-                      width="140"
-                      height="70"
-                      rx="20"
-                      fill="#1a5276"
-                    />
-                    <rect
-                      x="40"
-                      y="75"
-                      width="48"
-                      height="40"
-                      rx="10"
-                      fill="#2980b9"
-                    />
-                    <circle
-                      cx="64"
-                      cy="95"
-                      r="12"
-                      fill="#d4e6f1"
-                      opacity="0.5"
-                    />
-                    <circle
-                      cx="64"
-                      cy="95"
-                      r="5"
-                      fill="#ffffff"
-                      opacity="0.3"
-                    />
-                    <rect
-                      x="112"
-                      y="75"
-                      width="48"
-                      height="40"
-                      rx="10"
-                      fill="#2980b9"
-                    />
-                    <circle
-                      cx="136"
-                      cy="95"
-                      r="12"
-                      fill="#d4e6f1"
-                      opacity="0.5"
-                    />
-                    <circle
-                      cx="136"
-                      cy="95"
-                      r="5"
-                      fill="#ffffff"
-                      opacity="0.3"
-                    />
-                    <path
-                      d="M25 100 Q20 85 30 72"
-                      stroke="#1a5276"
-                      strokeWidth="5"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M175 100 Q180 85 170 72"
-                      stroke="#1a5276"
-                      strokeWidth="5"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                    <rect
-                      x="90"
-                      y="100"
-                      width="20"
-                      height="15"
-                      rx="5"
-                      fill="#0c2d42"
-                    />
-                    <path
-                      d="M64 75 L64 45 M136 75 L136 45"
-                      stroke="#0ea5e9"
-                      strokeWidth="2"
-                      opacity="0.4"
-                      strokeDasharray="4 4"
-                    >
-                      <animate
-                        attributeName="stroke-dashoffset"
-                        from="8"
-                        to="0"
-                        dur="1s"
-                        repeatCount="indefinite"
-                      />
-                    </path>
-                  </svg>
-                </div>
-              </div>
-
-              {/* Orbital nodes */}
-              {ORBITAL_ITEMS.map((item, i) => {
-                const angle =
-                  ((i / ORBITAL_ITEMS.length) * 360 + rotation) % 360;
-                const radian = (angle * Math.PI) / 180;
-                const radius = 155;
-                const x = radius * Math.cos(radian);
-                const y = radius * Math.sin(radian);
-                const Icon = item.icon;
-                const isActive = activeNode === i;
-
-                return (
-                  <div
-                    key={i}
-                    className="absolute cursor-pointer"
-                    style={{
-                      left: "50%",
-                      top: "50%",
-                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                      zIndex: isActive ? 200 : Math.round(100 + 50 * Math.cos(radian)),
-                      transition: "transform 0.7s ease",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleNode(i);
-                    }}
-                  >
-                    {/* Glow ring when active */}
-                    {isActive && (
-                      <div
-                        className="absolute rounded-full animate-pulse"
-                        style={{
-                          background: `radial-gradient(circle, ${item.color}33 0%, transparent 70%)`,
-                          width: 60,
-                          height: 60,
-                          left: -9,
-                          top: -9,
-                        }}
-                      />
-                    )}
-                    <div
-                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 group shadow-sm dark:shadow-none ${
-                        isActive
-                          ? "bg-white dark:bg-[#0c2d42] scale-125 shadow-lg"
-                          : "bg-white/80 dark:bg-[#0c2d42]/80 hover:bg-primary-lighter/50 dark:hover:bg-primary/30"
-                      }`}
-                      style={{
-                        borderWidth: 2,
-                        borderColor: isActive ? item.color : "rgba(41,128,185,0.3)",
-                        boxShadow: isActive ? `0 0 20px ${item.color}40` : undefined,
-                      }}
-                    >
-                      <Icon
-                        className={`w-4 h-4 md:w-5 md:h-5 transition-colors ${
-                          isActive ? "text-accent" : "text-primary dark:text-primary-lighter/70 group-hover:text-accent"
-                        }`}
-                      />
-                    </div>
-                    <span
-                      className={`absolute top-full mt-1 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[8px] md:text-[9px] tracking-wider transition-all duration-300 ${
-                        isActive
-                          ? "text-primary dark:text-primary-lighter scale-110"
-                          : "text-muted dark:text-primary-lighter/40"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                );
-              })}
+              <InsulinPenSVG />
             </div>
-
-            {/* Detail card — appears on node click */}
-            <AnimatePresence>
-              {activeNode !== null && (
-                <motion.div
-                  key={activeNode}
-                  className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-72 z-[300] max-sm:w-[90%]"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.35, ease: [0.25, 0.1, 0, 1] }}
-                >
-                  <div className="relative bg-white/95 dark:bg-[#0c2d42]/95 backdrop-blur-md rounded-xl border border-primary-lighter/40 dark:border-white/10 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
-                    {/* Color accent line */}
-                    <div
-                      className="absolute top-0 left-4 right-4 h-0.5 rounded-full"
-                      style={{ backgroundColor: ORBITAL_ITEMS[activeNode].color }}
-                    />
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className="font-mono text-xs tracking-wider font-semibold text-primary dark:text-primary-lighter">
-                        {ORBITAL_ITEMS[activeNode].title}
-                      </h4>
-                      <button
-                        className="text-muted dark:text-primary-lighter/50 hover:text-primary dark:hover:text-primary-lighter transition-colors flex-shrink-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveNode(null);
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                    <p className="text-muted dark:text-primary-lighter/60 text-xs leading-relaxed">
-                      {ORBITAL_ITEMS[activeNode].desc}
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
       </div>

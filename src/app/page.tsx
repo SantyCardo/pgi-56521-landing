@@ -5,14 +5,13 @@ import HeroTechnical from "@/components/HeroTechnical";
 
 const ProyectoSection = dynamic(() => import("@/components/ProyectoSection"));
 const SectionDivider = dynamic(() => import("@/components/SectionDivider"));
-const HowItWorks = dynamic(() => import("@/components/HowItWorks"));
 const ProblemaSection = dynamic(() => import("@/components/ProblemaSection"));
 const ObjetivosSection = dynamic(() => import("@/components/ObjetivosSection"));
 const TecnologiaSection = dynamic(() => import("@/components/TecnologiaSection"));
-const MetodologiaSection = dynamic(() => import("@/components/MetodologiaSection"));
+
 const JustificacionSection = dynamic(() => import("@/components/JustificacionSection"));
-const ArbolProblemaSection = dynamic(() => import("@/components/ArbolProblemaSection"));
 const PreguntaInvestigacionSection = dynamic(() => import("@/components/PreguntaInvestigacionSection"));
+const CronogramaSection = dynamic(() => import("@/components/CronogramaSection"));
 const AlcanceSection = dynamic(() => import("@/components/AlcanceSection"));
 const FAQSection = dynamic(() => import("@/components/FAQSection"));
 const ContactoSection = dynamic(() => import("@/components/ContactoSection"));
@@ -29,19 +28,15 @@ export default function Home() {
         <SectionDivider />
         <JustificacionSection />
         <SectionDivider />
-        <HowItWorks />
-        <SectionDivider />
         <ProblemaSection />
-        <SectionDivider />
-        <ArbolProblemaSection />
         <SectionDivider />
         <PreguntaInvestigacionSection />
         <SectionDivider />
         <ObjetivosSection />
         <SectionDivider />
-        <TecnologiaSection />
+        <CronogramaSection />
         <SectionDivider />
-        <MetodologiaSection />
+        <TecnologiaSection />
         <SectionDivider />
         <AlcanceSection />
         <SectionDivider />

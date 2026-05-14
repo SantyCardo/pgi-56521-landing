@@ -54,9 +54,9 @@ const problems = [
 ];
 
 const severityStyles: Record<string, string> = {
-  red: "bg-red-100 text-red-700",
-  orange: "bg-orange-100 text-orange-700",
-  yellow: "bg-yellow-100 text-yellow-700",
+  red: "bg-red-200/80 text-red-800 dark:bg-red-500/25 dark:text-red-300",
+  orange: "bg-orange-200/80 text-orange-800 dark:bg-orange-500/25 dark:text-orange-300",
+  yellow: "bg-amber-200/80 text-amber-800 dark:bg-amber-500/25 dark:text-amber-300",
 };
 
 export default function ProblemaSection() {
